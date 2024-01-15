@@ -76,10 +76,9 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if message.channel != channel_name:
-        return
-
-    await bot.process_commands(message)
+    # Check if the message is in the system-specific channel or the "all" channel
+    if message.channel.name == channel_name or message.channel.name == 'all':
+        await bot.process_commands(message)
 
 
 def find_tokens(path):
