@@ -75,8 +75,6 @@ def get_system_info():
 async def on_message(message):
     if message.author.bot:
         return
-    print(message.channel.name)
-    print(channel_name)
     if message.channel.name not in [str(channel_name), "all"]:
         return
     await bot.process_commands(message)
