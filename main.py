@@ -25,10 +25,10 @@ intents.messages = True
 intents.message_content = True
 
 TOKEN = os.environ.get('BOT_TOKEN')
-
+print(TOKEN)
 if not TOKEN:
     TOKEN = input("Enter your bot token: ")
-    os.environ['BOT_TOKEN'] = TOKEN
+    os.system("set BOT_TOKEN " + "=" + TOKEN)
 
 bot = commands.Bot(command_prefix='', intents=intents)
 bot.text_channel = None
