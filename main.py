@@ -44,7 +44,7 @@ async def on_ready():
     existing_channel = discord.utils.get(
         guild.channels, name=channel_name, type=discord.ChannelType.text)
     if existing_channel:
-        bot.text_channel = existing_channel
+        channel_name = existing_channel
         print(f'Using existing channel: {existing_channel.name}')
     else:
         bot.text_channel = await guild.create_text_channel(channel_name)
