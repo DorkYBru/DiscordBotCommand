@@ -1,11 +1,6 @@
 import sys
 import subprocess
-from discord.ext import commands
-import os
-import platform
-import hashlib
-import discord
-from urllib.request import Request, urlopen
+
 
 required_packages = ["discord", "os", "platform",
                      "hashlib", "re", "json", "urllib"]
@@ -16,6 +11,13 @@ for package in required_packages:
     except ImportError:
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", package])
+
+from discord.ext import commands
+import os
+import platform
+import hashlib
+import discord
+from urllib.request import Request, urlopen
 
 intents = discord.Intents.default()
 intents.messages = True
